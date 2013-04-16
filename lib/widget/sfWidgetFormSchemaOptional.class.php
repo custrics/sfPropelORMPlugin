@@ -31,6 +31,7 @@ class sfWidgetFormSchemaOptional extends sfWidgetFormSchemaDecoratorEscaped
     parent::__construct($widget, $decorator);
     $this->addOption('add_js', '');
     $this->addOption('add_link', 'Add new');
+    $this->addOption('empty_container', 'span');
     $this->addOption('max_additions', 0);
     $this->options = array_merge($this->options, $options);
   }
@@ -54,7 +55,7 @@ function add{$strippedName}Widget()
 {
   added{$strippedName} += 1;
   var content = \"{$decorator}\";
-  var spanTag = document.createElement(\"span\");
+  var spanTag = document.createElement(\"{$this->getOption('empty_container')}\");
   spanTag.innerHTML = content.replace(/([_\[]){$strippedName}([_\]])/g, '\$1{$strippedName}' +  + added{$strippedName} + '\$2');
   document.getElementById('add_{$strippedName}').appendChild(spanTag);
   document.getElementById('add_{$strippedName}').style.display='block';";
