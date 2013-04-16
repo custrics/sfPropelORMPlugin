@@ -46,6 +46,7 @@ class sfFormPropelCollection extends sfForm
       'remove_name'   => 'remove',
       'delete_widget' => null,
       'remove_fields' => array(),
+      'add_js'        => '',
     ), $options);
 
     if (!$collection)

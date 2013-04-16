@@ -29,6 +29,7 @@ class sfWidgetFormSchemaOptional extends sfWidgetFormSchemaDecoratorEscaped
   public function __construct(sfWidgetFormSchema $widget, $decorator, $options = array())
   {
     parent::__construct($widget, $decorator);
+    $this->addOption('add_js', '');
     $this->addOption('add_link', 'Add new');
     $this->addOption('max_additions', 0);
     $this->options = array_merge($this->options, $options);
@@ -58,6 +59,7 @@ function add{$strippedName}Widget()
   }";
     }
   $decorator .= "
+  {$this->getOption('add_js')}
 }
 /* ]]> */
 </script>
