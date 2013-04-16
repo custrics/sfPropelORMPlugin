@@ -62,7 +62,8 @@ class sfWidgetFormPropelChoice extends sfWidgetFormChoice
     $this->addOption('connection', null);
     $this->addOption('multiple', false);
     // not used anymore
-    $this->addOption('peer_method', 'doSelect');
+    // but when you try - it breaks everything!
+    $this->addOption('peer_method', null);
 
     parent::configure($options, $attributes);
   }
@@ -80,27 +81,42 @@ class sfWidgetFormPropelChoice extends sfWidgetFormChoice
       $choices[''] = true === $this->getOption('add_empty') ? '' : $this->getOption('add_empty');
     }
 
-    $criteria = PropelQuery::from($this->getOption('model'));
-    if ($this->getOption('criteria'))
+    if($this->getOption('peer_method') === null)
     {
-      $criteria->mergeWith($this->getOption('criteria'));
-    }
-    foreach ($this->getOption('query_methods') as $methodName => $methodParams)
-    {
-      if(is_array($methodParams))
+      $criteria = PropelQuery::from($this->getOption('model'));
+      if ($this->getOption('criteria'))
       {
-        $criteria = call_user_func_array(array($criteria, $methodName), $methodParams);
+        $criteria->mergeWith($this->getOption('criteria'));
       }
-      else
+      foreach ($this->getOption('query_methods') as $methodName => $methodParams)
       {
-        $criteria = $criteria->$methodParams();
+        if(is_array($methodParams))
+        {
+          $criteria = call_user_func_array(array($criteria, $methodName), $methodParams);
+        }
+        else
+        {
+          $criteria = $criteria->$methodParams();
+        }
       }
+      if ($order = $this->getOption('order_by'))
+      {
+        $criteria->orderBy($order[0], $order[1]);
+      }
+      $objects = $criteria->find($this->getOption('connection'));
     }
-    if ($order = $this->getOption('order_by'))
+    else
     {
-      $criteria->orderBy($order[0], $order[1]);
+    	$class = constant($this->getOption('model').'::PEER');
+    	
+    	$criteria = null === $this->getOption('criteria') ? new Criteria() : clone $this->getOption('criteria');
+    	if ($order = $this->getOption('order_by'))
+    	{
+    		$method = sprintf('add%sOrderByColumn', 0 === strpos(strtoupper($order[1]), 'ASC') ? 'Ascending' : 'Descending');
+    		$criteria->$method(call_user_func(array($class, 'translateFieldName'), $order[0], BasePeer::TYPE_PHPNAME, BasePeer::TYPE_COLNAME));
+    	}
+    	$objects = call_user_func(array($class, $this->getOption('peer_method')), $criteria, $this->getOption('connection'));
     }
-    $objects = $criteria->find($this->getOption('connection'));
 
     $methodKey = $this->getOption('key_method');
     if (!method_exists($this->getOption('model'), $methodKey))
