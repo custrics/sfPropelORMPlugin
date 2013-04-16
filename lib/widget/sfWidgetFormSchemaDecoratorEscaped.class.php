@@ -44,7 +44,9 @@ class sfWidgetFormSchemaDecoratorEscaped extends sfWidgetFormSchemaDecorator
    */
   protected function escape($string)
   {
-    return substr(json_encode($string), 1, -1); // remove first and last double quote
+    //FIXME: THIS IS UGLY!
+    $converted = mb_detect_encoding($string, 'UTF-8', true) ? $string : iconv('ISO-8859-1', 'UTF-8', $string);
+    return substr(json_encode($converted), 1, -1); // remove first and last double quote
   }
 
   protected function getDecorator($name)
